@@ -1,3 +1,143 @@
+## Running the frontend locally with Docker
+
+The frontend is served by nginx and runs on port `8081`.
+
+The frontend calls the backend API. For local Docker testing, the backend should be available at:
+
+```text
+http://localhost:8080/api
+```
+
+---
+
+## Prerequisites
+
+You need:
+
+* Docker installed
+* Access to the frontend container image
+* The backend running on port `8080`
+
+If the image is private on GHCR, log in first:
+
+```bash
+echo "YOUR_GITHUB_PAT" | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+```
+
+Set the image information:
+
+```bash
+export OWNER="your-github-username-or-org"
+export FRONTEND_TAG="latest"
+```
+
+---
+
+## Run the frontend
+
+Start the frontend:
+
+```bash
+docker run --rm \
+  --name weather-frontend \
+  -p 8081:80 \
+  ghcr.io/$OWNER/frontend:$FRONTEND_TAG
+```
+
+Open the app in the browser:
+
+```text
+http://localhost:8081
+```
+
+Make sure to use `http://`, not `https://`.
+
+---
+
+## Optional: Override frontend runtime config
+
+If the frontend image needs to be told where the backend is running, create a local config file:
+
+```bash
+cat > config.local.js <<'EOF'
+window.APP_CONFIG = {
+  enabled: true,
+  VITE_BACKEND_API_URL: 'http://localhost:8080/api'
+};
+EOF
+```
+
+Then run the frontend with the config file mounted into nginx:
+
+```bash
+docker run --rm \
+  --name weather-frontend \
+  -p 8081:80 \
+  -v "$PWD/config.local.js:/usr/share/nginx/html/config.js:ro" \
+  ghcr.io/$OWNER/frontend:$FRONTEND_TAG
+```
+
+For local Docker testing, use:
+
+```js
+window.APP_CONFIG = {
+  enabled: true,
+  VITE_BACKEND_API_URL: 'http://localhost:8080/api'
+};
+```
+
+For Kubernetes, use:
+
+```js
+window.APP_CONFIG = {
+  enabled: true,
+  VITE_BACKEND_API_URL: '/api'
+};
+```
+
+---
+
+## Why Kubernetes uses `/api`
+
+In Kubernetes, the frontend JavaScript runs in the user’s browser.
+
+So this would be wrong in Kubernetes:
+
+```js
+VITE_BACKEND_API_URL: 'http://localhost:8080/api'
+```
+
+because `localhost` would mean the user’s laptop, not the backend pod.
+
+Instead, Kubernetes should route the same public hostname like this:
+
+```text
+/       → frontend service
+/api    → backend service
+```
+
+Then the frontend can call:
+
+```text
+/api/user/
+/api/metar/LOWW
+```
+
+and the browser sends those requests to the same hostname that served the frontend.
+
+---
+
+## Notes
+
+* The frontend should not contain the AVWX API key.
+* The frontend should only call the backend.
+* The backend is responsible for calling AVWX.
+* The frontend runtime config can be changed without rebuilding the Docker image by mounting a new `config.js`.
+* In Kubernetes, `config.js` should be provided through a ConfigMap.
+
+
+---
+
 # Hochschule Burgenland - BSWE - WS2024 - 2nd Attempt - Weather App - Frontend - Reference
 
 [![](https://img.shields.io/github/license/muhlba91/hochschule-burgenland-bswe-ws2024-2at-frontend?style=for-the-badge)](LICENSE.md)
