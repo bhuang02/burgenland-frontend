@@ -100,11 +100,15 @@ export class ApiService {
    * @throws {Error} If the ICAO code is invalid or the METAR service is unavailable.
    */
   static async getMetar(icao: string): Promise<Metar> {
-    const { data } = await axios.get(ApiConfig.METAR_API_URL.replace('{icao}', icao), {
-      headers: {
-        Authorization: ApiConfig.AVWX_API_KEY
-      }
-    })
+    const { data } = await axios.get(`${ApiConfig.API_URL}/metar/${encodeURIComponent(icao)}`)
     return data
   }
+//  static async getMetar(icao: string): Promise<Metar> {
+//    const { data } = await axios.get(ApiConfig.METAR_API_URL.replace('{icao}', icao), {
+//      headers: {
+//        Authorization: ApiConfig.AVWX_API_KEY
+//      }
+//    })
+//    return data
+//  }
 }

@@ -8,8 +8,8 @@ declare namespace NodeJS {
 
 interface ImportMetaEnv {
   readonly VITE_BACKEND_API_URL: string
-  readonly VITE_METAR_API_URL: string
-  readonly VITE_AVWX_API_KEY: string
+  // readonly VITE_METAR_API_URL: string
+  // readonly VITE_AVWX_API_KEY: string
 }
 
 interface ImportMeta {
@@ -20,7 +20,7 @@ interface Window {
   APP_CONFIG?: {
     enabled?: boolean;
     VITE_BACKEND_API_URL?: string;
-    VITE_METAR_API_URL?: string;
-    VITE_AVWX_API_KEY?: string;
+    // VITE_METAR_API_URL?: string;
+    // VITE_AVWX_API_KEY?: string;
   };
 }
